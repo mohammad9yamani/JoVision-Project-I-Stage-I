@@ -1,13 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import { accelerometer, SensorTypes, setUpdateIntervalForType } from 'react-native-sensors';
+import { requestMultiple, PERMISSIONS } from 'react-native-permissions';
 
 const SensorsScreen = () => {
   const [location, setLocation] = useState({});
   const [orientation, setOrientation] = useState({});
+  const [hasPermission, setHasPermission] = useState(false);
 
   useEffect(() => {
+    const requestPermissions = async () => {
+      const statuses = await requestMultiple([
+        PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+        PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION,
+      ]);
+      if (statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION] === 'granted' &&
+          statuses[PERMISSIONS.ANDROID.ACCESS_COARSE_LOCATION] === 'granted') {
+        setHasPermission(true);
+      } else {
+        Alert.alert('Permissions not granted', 'Please enable location and sensor permissions in your device settings.');
+      }
+    };
+
+    requestPermissions();
+  }, []);
+
+  useEffect(() => {
+    if (!hasPermission) return;
+
     // Update location every 10 seconds
     const locationWatchId = Geolocation.watchPosition(
       (position) => {
@@ -31,7 +52,15 @@ const SensorsScreen = () => {
       Geolocation.clearWatch(locationWatchId);
       orientationSubscription.unsubscribe();
     };
-  }, []);
+  }, [hasPermission]);
+
+  if (!hasPermission) {
+    return (
+      <View style={styles.container}>
+        <Text>Waiting for permissions...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

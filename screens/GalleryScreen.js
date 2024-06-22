@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, RefreshControl } from 'react-native';
+import { View, FlatList, Image, StyleSheet, RefreshControl } from 'react-native';
 import RNFS from 'react-native-fs';
 
 const GalleryScreen = () => {
@@ -26,7 +26,7 @@ const GalleryScreen = () => {
       <FlatList
         data={images}
         keyExtractor={(item) => item.path}
-        renderItem={({ item }) => <Image source={{ uri: item.path }} style={styles.image} />}
+        renderItem={({ item }) => <Image source={{ uri: `file://${item.path}` }} style={styles.image} />}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       />
     </View>

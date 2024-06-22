@@ -20,7 +20,7 @@ const SlideshowScreen = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!isPaused) {
+      if (!isPaused && images.length > 0) {
         currentIndex.current = (currentIndex.current + 1) % images.length;
         flatListRef.current.scrollToIndex({ index: currentIndex.current, animated: true });
       }
@@ -36,7 +36,7 @@ const SlideshowScreen = () => {
         ref={flatListRef}
         data={images}
         keyExtractor={(item) => item.path}
-        renderItem={({ item }) => <Image source={{ uri: item.path }} style={styles.image} />}
+        renderItem={({ item }) => <Image source={{ uri: `file://${item.path}` }} style={styles.image} />}
         horizontal
         pagingEnabled
         scrollEnabled={false}

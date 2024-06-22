@@ -1,17 +1,34 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { RNCamera } from 'react-native-camera';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Button, StyleSheet, Image, Alert, Text } from 'react-native';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
 
 const CameraScreen = () => {
-  const cameraRef = useRef(null);
   const [photo, setPhoto] = useState(null);
+  const cameraRef = useRef(null);
+  const device = useCameraDevice('back'); 
+  const { hasPermission, requestPermission } = useCameraPermission();
+  
+  useEffect(() => {
+    const checkPermission = async () => {
+      if (!hasPermission) {
+        const status = await requestPermission();
+        console.log(status)
+        if (status !== 'authorized') {
+          Alert.alert('Permission Denied', 'Camera permission is required to take photos.');
+        }
+      }
+    };
+
+    checkPermission();
+  }, [hasPermission, requestPermission]);
 
   const takePicture = async () => {
     if (cameraRef.current) {
-      const options = { quality: 0.5, base64: true };
-      const data = await cameraRef.current.takePictureAsync(options);
-      setPhoto(data.uri);
+      const photo = await cameraRef.current.takePhoto({
+        qualityPrioritization: 'speed',
+      });
+      setPhoto(photo.path);
     }
   };
 
@@ -19,25 +36,32 @@ const CameraScreen = () => {
     const destPath = `${RNFS.DocumentDirectoryPath}/${Date.now()}.jpg`;
     await RNFS.moveFile(photo, destPath);
     setPhoto(null);
-    // Return to camera for another picture
+    Alert.alert('Photo saved!', 'The photo has been saved successfully.');
   };
 
   const discardPicture = async () => {
     await RNFS.unlink(photo);
     setPhoto(null);
-    // Return to camera for another picture
   };
+
+  if (device == null || !hasPermission) return <View><Text>Loading...</Text></View>;
 
   return (
     <View style={styles.container}>
       {photo ? (
         <>
-          <Image source={{ uri: photo }} style={styles.preview} />
+          <Image source={{ uri: `file://${photo}` }} style={styles.preview} />
           <Button title="Save" onPress={savePicture} />
           <Button title="Discard" onPress={discardPicture} />
         </>
       ) : (
-        <RNCamera ref={cameraRef} style={styles.camera} />
+        <Camera
+          style={styles.camera}
+          ref={cameraRef}
+          device={device}
+          isActive={true}
+          photo={true}
+        />
       )}
       {!photo && <Button title="Take Photo" onPress={takePicture} />}
     </View>
