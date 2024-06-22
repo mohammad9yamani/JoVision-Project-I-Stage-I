@@ -14,7 +14,7 @@ const CameraScreen = () => {
       if (!hasPermission) {
         const status = await requestPermission();
         console.log(status)
-        if (status !== 'authorized') {
+        if (!status) {
           Alert.alert('Permission Denied', 'Camera permission is required to take photos.');
         }
       }
@@ -25,10 +25,10 @@ const CameraScreen = () => {
 
   const takePicture = async () => {
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePhoto({
+      const photo_captured = await cameraRef.current.takePhoto({
         qualityPrioritization: 'speed',
       });
-      setPhoto(photo.path);
+      setPhoto(photo_captured.path);
     }
   };
 

@@ -29,7 +29,6 @@ const SensorsScreen = () => {
   useEffect(() => {
     if (!hasPermission) return;
 
-    // Update location every 10 seconds
     const locationWatchId = Geolocation.watchPosition(
       (position) => {
         const { altitude, longitude, latitude, speed } = position.coords;
@@ -39,7 +38,7 @@ const SensorsScreen = () => {
       { enableHighAccuracy: true, distanceFilter: 0, interval: 10000 }
     );
 
-    // Update orientation every 500 milliseconds
+    
     setUpdateIntervalForType(SensorTypes.accelerometer, 500);
     const orientationSubscription = accelerometer.subscribe(
       ({ x, y, z }) => {
