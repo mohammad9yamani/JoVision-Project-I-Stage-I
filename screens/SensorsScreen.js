@@ -40,12 +40,11 @@ const SensorsScreen = () => {
 
     
     setUpdateIntervalForType(SensorTypes.accelerometer, 500);
-    const orientationSubscription = accelerometer.subscribe(
-      ({ x, y, z }) => {
-        setOrientation({ x, y, z });
-      },
-      (error) => console.log('The sensor is not available')
-    );
+    const orientationSubscription = accelerometer.subscribe({
+      next: ({ x, y, z }) => setOrientation({ x, y, z }),
+      error: (error) => console.log('The sensor is not available', error),
+      complete: () => console.log('Subscription complete')
+    });
 
     return () => {
       Geolocation.clearWatch(locationWatchId);
